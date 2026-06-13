@@ -16,7 +16,7 @@
 
 ---
 
-## 📌 Table of Contents
+## Table of Contents
 
 - [About the Project](#-about-the-project)
 - [Dataset](#-dataset)
@@ -32,7 +32,7 @@
 
 ---
 
-## 🔍 About the Project
+## About the Project
 
 Air pollution is one of the most critical public health challenges in Northern India. This project provides a **complete, reproducible data science pipeline** that:
 
@@ -307,7 +307,7 @@ The dashboard has **6 interactive pages**:
 
 ---
 
-## 💡 Key Findings
+## Key Findings
 
 1. **Delhi is the most polluted state** — mean AQI is consistently 30–50% higher than Punjab and Haryana, and nearly double that of Rajasthan.
 
@@ -333,27 +333,7 @@ The dashboard has **6 interactive pages**:
 - [ ] **Health impact estimation** — linking AQI to hospital admissions data (HMIS)
 - [ ] **Docker containerisation** for reproducible deployment
 
----
 
-## 🛠️ Tech Stack
-
-| Category | Tools |
-|---|---|
-| **Language** | Python 3.10+ |
-| **Data wrangling** | pandas, numpy |
-| **Visualisation** | matplotlib, seaborn, plotly |
-| **Machine Learning** | scikit-learn, xgboost |
-| **Dashboard** | Streamlit |
-| **Model persistence** | joblib |
-| **Environment** | conda / venv |
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
 
 ## 🙋 About
 
