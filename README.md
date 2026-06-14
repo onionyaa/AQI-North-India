@@ -28,11 +28,9 @@ Air pollution is one of the most critical public health challenges in Northern I
 
 - Calculates AQI using the **official CPCB (Central Pollution Control Board) sub-index methodology**
 - Analyses 5 years of hourly air quality data across **Delhi, Punjab, Haryana, Uttar Pradesh, and Rajasthan**
-- Generates **15 publication-quality visualisations** exposing seasonal patterns, crop-burning spikes, and COVID-19 lockdown effects
+- Generates **quality visualisations** exposing seasonal patterns, crop-burning spikes, and COVID-19 lockdown effects
 - Trains and compares **three ML models** (Linear Regression, Random Forest, XGBoost) to predict next-hour AQI
 - Deploys an **interactive 6-page Streamlit dashboard** with Plotly charts and a live prediction tool
-
-This project is designed to be resume-worthy for roles in **data science, environmental analytics, and public policy research**.
 
 ---
 
