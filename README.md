@@ -3,7 +3,7 @@
 <div align="center">
 
 
-**An end-to-end data science project analysing air quality across five northern Indian states (2015–2020) using the official CPCB methodology, machine learning forecasting, and an interactive Streamlit dashboard.**
+**This project analyses air quality data from five northern Indian states between 2015 and 2020. The project includes AQI calculation based on CPCB guidelines, exploratory data analysis, machine learning forecasting, and a Streamlit dashboard for visualisation.
 
 
 </div>
@@ -258,18 +258,6 @@ Open your browser at `http://localhost:8501`
 ════════════════════════════════════════════════════════
 ```
 
-### Top Feature Importances (XGBoost)
-
-```
-1. AQI_Lag1        ████████████████████  (most important)
-2. AQI_Roll3       ████████████████
-3. AQI_Lag24       ████████████
-4. AQI_Roll24      ██████████
-5. CropBurning     ████████
-6. Month_Sin       ███████
-7. PM2.5           ██████
-8. Season_Enc      █████
-```
 
 ---
 
