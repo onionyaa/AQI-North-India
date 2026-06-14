@@ -2,11 +2,6 @@
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)
-![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?style=for-the-badge&logo=streamlit)
-![XGBoost](https://img.shields.io/badge/XGBoost-ML%20Model-orange?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Complete-brightgreen?style=for-the-badge)
 
 **An end-to-end data science project analysing air quality across five northern Indian states (2015–2020) using the official CPCB methodology, machine learning forecasting, and an interactive Streamlit dashboard.**
 
