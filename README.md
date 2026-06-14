@@ -323,25 +323,7 @@ The dashboard has **6 interactive pages**:
 
 ---
 
-## 🔭 Future Work
 
-- [ ] **LSTM / Transformer-based forecasting** for longer-horizon (7-day) AQI prediction
-- [ ] **Geospatial interpolation** (Kriging, IDW) to estimate AQI at unmonitored locations
-- [ ] **Source apportionment analysis** to quantify contribution of transport, industry, and agriculture
-- [ ] **Real-time data pipeline** using CPCB's live API
-- [ ] **Policy impact modelling** — quantifying the effect of specific interventions (GRAP stages, odd-even)
-- [ ] **Health impact estimation** — linking AQI to hospital admissions data (HMIS)
-- [ ] **Docker containerisation** for reproducible deployment
-
-
-
-## 🙋 About
-
-Built by a final-year undergraduate student as a portfolio project demonstrating end-to-end data science skills for environmental analytics and public policy research roles.
-
-**Connect:**
-- 💼 [LinkedIn](https://linkedin.com/in/YOUR_PROFILE)
-- 🐙 [GitHub](https://github.com/YOUR_USERNAME)
 
 ---
 
