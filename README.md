@@ -26,10 +26,6 @@
 - [Results](#-results)
 - [Streamlit Dashboard](#-streamlit-dashboard)
 - [Key Findings](#-key-findings)
-- [Future Work](#-future-work)
-- [Tech Stack](#-tech-stack)
-- [License](#-license)
-
 ---
 
 ## About the Project
