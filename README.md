@@ -5,7 +5,6 @@
 
 **An end-to-end data science project analysing air quality across five northern Indian states (2015–2020) using the official CPCB methodology, machine learning forecasting, and an interactive Streamlit dashboard.**
 
-[📊 Live Dashboard](#-streamlit-dashboard) • [📁 Project Structure](#-project-structure) • [🚀 Quick Start](#-quick-start) • [📈 Results](#-results)
 
 </div>
 
