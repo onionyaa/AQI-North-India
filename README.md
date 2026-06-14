@@ -134,13 +134,6 @@ Ip = [(IHi - ILo) / (BPHi - BPLo)] × (Cp - BPLo) + ILo
 | Random Forest | ~18–25 | ~12–18 | ~0.90–0.94 |
 | **XGBoost** ✅ | **~15–22** | **~10–15** | **~0.93–0.97** |
 
-> Exact results depend on your data version. XGBoost consistently wins due to its gradient-boosted sequential correction of errors.
-
-**Why XGBoost wins:**
-- Handles non-linear relationships (pollution is not linear in time or pollutant concentration)
-- Built-in regularisation prevents overfitting
-- Early stopping automatically finds optimal number of trees
-- SHAP-compatible for interpretable feature importance
 
 ---
 
