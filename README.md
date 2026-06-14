@@ -3,7 +3,7 @@
 <div align="center">
 
 
-**This project analyses air quality data from five northern Indian states between 2015 and 2020. The project includes AQI calculation based on CPCB guidelines, exploratory data analysis, machine learning forecasting, and a Streamlit dashboard for visualisation.
+This project analyses air quality data from five northern Indian states between 2015 and 2020. The project includes AQI calculation based on CPCB guidelines, exploratory data analysis, machine learning forecasting, and a Streamlit dashboard for visualisation.
 
 
 </div>
