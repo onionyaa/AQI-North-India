@@ -1,4 +1,4 @@
-# 🌿 Air Quality Index (AQI) Analysis & Forecasting — Northern India
+# Air Quality Index (AQI) Analysis & Forecasting — Northern India
 
 <div align="center">
 
@@ -34,22 +34,21 @@ Air pollution is one of the most critical public health challenges in Northern I
 
 ---
 
-## 📦 Dataset
+## Dataset
 
 | Field | Details |
 |---|---|
 | **Source** | [Indian Air Quality Data — Kaggle](https://www.kaggle.com/datasets/rohanrao/air-quality-data-in-india) |
 | **Files used** | `station_hour.csv`, `stations.csv` |
-| **Time range** | January 2015 – December 2020 |
+| **Time range** | January 2015 – July 2020 |
 | **States** | Delhi, Punjab, Haryana, Uttar Pradesh, Rajasthan |
 | **Pollutants** | PM2.5, PM10, SO₂, NOx, NH₃, CO, O₃ |
 | **Frequency** | Hourly readings per monitoring station |
 
-> ⬇️ **Download the dataset from Kaggle and place the files in `data/raw/` before running.**
 
 ---
 
-## 🧪 Methodology
+## Methodology
 
 ### Part 1 · Data Preprocessing
 - Merged `station_hour.csv` with `stations.csv` on `StationId`
@@ -130,9 +129,9 @@ Ip = [(IHi - ILo) / (BPHi - BPLo)] × (Cp - BPLo) + ILo
 
 | Model | RMSE | MAE | R² |
 |---|---|---|---|
-| Linear Regression | ~35–45 | ~25–35 | ~0.75–0.82 |
-| Random Forest | ~18–25 | ~12–18 | ~0.90–0.94 |
-| **XGBoost** ✅ | **~15–22** | **~10–15** | **~0.93–0.97** |
+| Linear Regression |  | |  |
+| Random Forest |  |  |  |
+| **XGBoost** ✅ | ** | **** | **~** |
 
 
 ---
@@ -252,9 +251,9 @@ Open your browser at `http://localhost:8501`
 ════════════════════════════════════════════════════════
   MODEL          RMSE      MAE       R²
 ────────────────────────────────────────────────────────
-  Lin. Regression  ~40.2    ~29.1    0.78
-  Random Forest    ~21.5    ~14.3    0.92
-  XGBoost ✅       ~17.8    ~11.6    0.95
+  Lin. Regression  
+  Random Forest    
+  XGBoost ✅       
 ════════════════════════════════════════════════════════
 ```
 
