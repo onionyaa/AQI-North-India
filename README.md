@@ -129,9 +129,8 @@ Ip = [(IHi - ILo) / (BPHi - BPLo)] × (Cp - BPLo) + ILo
 
 | Model | RMSE | MAE | R² |
 |---|---|---|---|
-| Linear Regression |  | |  |
 | Random Forest |  |  |  |
-| **XGBoost** ✅ | ** | **** | **~** |
+| XGBoost | ** | **** | **~** |
 
 
 ---
