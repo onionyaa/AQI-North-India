@@ -184,7 +184,7 @@ AQI_Project/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone the repository
 
@@ -225,13 +225,13 @@ python run_pipeline.py
 ```
 
 This single command will:
-- ✅ Preprocess and clean the data
-- ✅ Calculate AQI using CPCB methodology
-- ✅ Generate all 15 EDA visualisations
-- ✅ Engineer features
-- ✅ Train and compare all 3 ML models
-- ✅ Save the best model to `models/best_model.pkl`
-- ✅ Export results to `outputs/`
+- Preprocess and clean the data
+- Calculate AQI using CPCB methodology
+- Generate all 15 EDA visualisations
+- Engineer features
+- Train and compare all 3 ML models
+- Save the best model to `models/best_model.pkl`
+- Export results to `outputs/`
 
 ### 6. Launch the Streamlit dashboard
 
@@ -251,16 +251,15 @@ Open your browser at `http://localhost:8501`
 ════════════════════════════════════════════════════════
   MODEL          RMSE      MAE       R²
 ────────────────────────────────────────────────────────
-  Lin. Regression  
   Random Forest    
-  XGBoost ✅       
+  XGBoost    
 ════════════════════════════════════════════════════════
 ```
 
 
 ---
 
-## 🖥️ Streamlit Dashboard
+## Streamlit Dashboard
 
 The dashboard has **6 interactive pages**:
 
