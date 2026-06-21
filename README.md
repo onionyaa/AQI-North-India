@@ -90,7 +90,7 @@ AQI categories (standard CPCB bands):
 | Top polluted cities | A few industrial UP cities rival Delhi |
 | Yearly trend | Flat-to-worsening 2015-2019, excluding the COVID year |
 
-### 4. Feature Engineering
+## 4. Feature Engineering
 
 | Feature | Type | Reasoning |
 |---|---|---|
@@ -103,7 +103,7 @@ AQI categories (standard CPCB bands):
 | `CropBurning` | Binary | Oct-Nov + Punjab/Haryana stubble burning flag |
 | `State_*` | One-hot | Each state has a distinct baseline pollution profile |
 
-### 5. Machine Learning
+## 5. Machine Learning
 
 Target: `AQI_Final`, framed as regression.
 
