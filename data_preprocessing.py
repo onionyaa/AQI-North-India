@@ -1,6 +1,6 @@
 """
 
-PART 1: DATA PREPROCESSING
+Step 1 :  DATA PREPROCESSING
 
 Data preprocessing for the AQI forecasting project.
 Loads raw CPCB data, merges station metadata and
