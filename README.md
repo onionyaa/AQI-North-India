@@ -1,298 +1,227 @@
-# Air Quality Index (AQI) Analysis & Forecasting — Northern India
+# AQI Analysis & Forecasting — Northern India
 
-<div align="center">
+Air quality pipeline covering five northern Indian states (2015-2020). Calculates official CPCB AQI from raw pollutant readings, does a full EDA pass, trains a couple of ML models to forecast next-hour AQI, and wraps it all in a Streamlit dashboard.
 
-
-This project analyses air quality data from five northern Indian states between 2015 and 2020. The project includes AQI calculation based on CPCB guidelines, exploratory data analysis, machine learning forecasting, and a Streamlit dashboard for visualisation.
-
-
-</div>
-
----
+I built this after seeing yet another winter of "severe" AQI days in Delhi and wanting to actually dig into the data instead of just reading headlines about it.
 
 ## Table of Contents
 
-- [About the Project](#-about-the-project)
-- [Dataset](#-dataset)
-- [Methodology](#-methodology)
-- [Project Structure](#-project-structure)
-- [Quick Start](#-quick-start)
-- [Results](#-results)
-- [Streamlit Dashboard](#-streamlit-dashboard)
-- [Key Findings](#-key-findings)
----
+- [About](#about)
+- [Dataset](#dataset)
+- [Methodology](#methodology)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [Results](#results)
+- [Dashboard](#dashboard)
+- [Key Findings](#key-findings)
 
-## About the Project
+## About
 
-Air pollution is one of the most critical public health challenges in Northern India. This project provides a **complete, reproducible data science pipeline** that:
+Northern India — Delhi, Punjab, Haryana, UP, Rajasthan — has some of the worst air quality in the world, and it's not getting much coverage beyond "Delhi smog" headlines every November. This project digs into 5 years of hourly station data to see what's actually driving it.
 
-- Calculates AQI using the **official CPCB (Central Pollution Control Board) sub-index methodology**
-- Analyses 5 years of hourly air quality data across **Delhi, Punjab, Haryana, Uttar Pradesh, and Rajasthan**
-- Generates **quality visualisations** exposing seasonal patterns, crop-burning spikes, and COVID-19 lockdown effects
-- Trains and compares **two ML models** (Random Forest, XGBoost) to predict next-hour AQI
-- Deploys an **interactive 6-page Streamlit dashboard** with Plotly charts and a live prediction tool
-
----
+What's in here:
+- AQI calculated using the actual CPCB sub-index formula (not a simplified version)
+- EDA across all five states — seasonal patterns, crop burning spikes, the COVID dip
+- Random Forest and XGBoost models for next-hour AQI prediction
+- A 6-page Streamlit dashboard, including a live prediction tool
 
 ## Dataset
 
 | Field | Details |
 |---|---|
-| **Source** | [Indian Air Quality Data — Kaggle](https://www.kaggle.com/datasets/rohanrao/air-quality-data-in-india) |
-| **Files used** | `station_hour.csv`, `stations.csv` |
-| **Time range** | January 2015 – July 2020 |
-| **States** | Delhi, Punjab, Haryana, Uttar Pradesh, Rajasthan |
-| **Pollutants** | PM2.5, PM10, SO₂, NOx, NH₃, CO, O₃ |
-| **Frequency** | Hourly readings per monitoring station |
-
-
----
+| Source | [Air Quality Data in India — Kaggle](https://www.kaggle.com/datasets/rohanrao/air-quality-data-in-india) |
+| Files used | `station_hour.csv`, `stations.csv` |
+| Time range | Jan 2015 – Jul 2020 |
+| States | Delhi, Punjab, Haryana, Uttar Pradesh, Rajasthan |
+| Pollutants | PM2.5, PM10, SO2, NOx, NH3, CO, O3 |
+| Frequency | Hourly, per station |
 
 ## Methodology
 
-### Part 1 · Data Preprocessing
-- Merged `station_hour.csv` with `stations.csv` on `StationId`
-- Filtered 5 northern states from the all-India dataset
-- Parsed datetime → extracted Year, Month, Day, Hour, DayOfWeek, Season
-- Forward-fill imputation grouped by station (respects temporal continuity)
-- Clipped negative sensor values to 0; removed all-null rows
-- Removed duplicate `(StationId, Datetime)` entries
+### 1. Data Preprocessing
 
-### Part 2 · AQI Calculation (CPCB Methodology)
+Merged `station_hour.csv` with `stations.csv` on `StationId`, filtered down to the 5 northern states out of the full all-India dataset. Parsed datetime into Year/Month/Day/Hour/DayOfWeek/Season, forward-filled missing readings grouped by station (so I'm not pulling values across station boundaries), clipped negative sensor readings to 0, dropped fully-null rows, and removed duplicate `(StationId, Datetime)` pairs.
 
-The CPCB formula computes a **sub-index per pollutant** using linear interpolation within breakpoint ranges, then takes the **maximum sub-index** as the final AQI.
+### 2. AQI Calculation (CPCB Methodology)
+
+This was the part I spent the most time getting right. CPCB computes a sub-index per pollutant using linear interpolation within breakpoint ranges, then takes the max sub-index as the final AQI:
 
 ```
 Ip = [(IHi - ILo) / (BPHi - BPLo)] × (Cp - BPLo) + ILo
 ```
 
+Averaging periods per pollutant:
+
 | Pollutant | Averaging period | Method |
 |---|---|---|
 | PM2.5 | 24-hour | Rolling mean |
 | PM10  | 24-hour | Rolling mean |
-| SO₂   | 24-hour | Rolling mean |
+| SO2   | 24-hour | Rolling mean |
 | NOx   | 24-hour | Rolling mean |
-| NH₃   | 24-hour | Rolling mean |
+| NH3   | 24-hour | Rolling mean |
 | CO    | 8-hour  | Rolling max  |
-| O₃    | 8-hour  | Rolling max  |
+| O3    | 8-hour  | Rolling max  |
 
-**AQI Categories:**
+AQI categories (standard CPCB bands):
 
-| AQI Range | Category | Colour |
+| Range | Category |
+|---|---|
+| 0–50 | Good |
+| 51–100 | Satisfactory |
+| 101–200 | Moderate |
+| 201–300 | Poor |
+| 301–400 | Very Poor |
+| 401–500 | Severe |
+
+### 3. EDA
+
+15 plots total, a few highlights below — full list and code in `src/eda_visualizations.py`.
+
+| Plot | What it shows |
+|---|---|
+| AQI distribution | Right-skewed, long tail of severe events |
+| AQI over time | Clear winter peaks, sharp COVID dip in 2020 |
+| Monthly trends | Nov-Dec worst, Jul-Aug (monsoon) cleanest |
+| Seasonal comparison | Winter AQI runs 2-3x monsoon AQI |
+| State comparison | Delhi consistently on top |
+| Correlation heatmap | PM2.5 and PM10 strongly correlated (r ≈ 0.8) |
+| PM10 by state | Rajasthan spikes in summer — dust storms, not winter smog |
+| Crop burning window | AQI roughly doubles in Punjab/Haryana, Oct-Nov |
+| Top polluted cities | A few industrial UP cities rival Delhi |
+| Yearly trend | Flat-to-worsening 2015-2019, excluding the COVID year |
+
+### 4. Feature Engineering
+
+| Feature | Type | Reasoning |
 |---|---|---|
-| 0 – 50 | Good | 🟢 |
-| 51 – 100 | Satisfactory | 🟡 |
-| 101 – 200 | Moderate | 🟠 |
-| 201 – 300 | Poor | 🔴 |
-| 301 – 400 | Very Poor | 🟣 |
-| 401 – 500 | Severe | ⚫ |
+| `AQI_Lag1/3/6/24` | Lag | AQI is strongly autocorrelated hour to hour |
+| `AQI_Roll3/6/24` | Rolling mean | Smooths spikes, captures the background pollution level |
+| `AQI_Delta1/6` | Rate of change | Is it trending up or down right now |
+| `Month_Sin/Cos`, `Hour_Sin/Cos` | Cyclical encoding | Dec and Jan are adjacent, not far apart numerically |
+| `Season_Enc` | Integer | Winter regime is nothing like monsoon regime |
+| `IsWeekend` | Binary | Traffic/industrial activity drops on weekends |
+| `CropBurning` | Binary | Oct-Nov + Punjab/Haryana stubble burning flag |
+| `State_*` | One-hot | Each state has a distinct baseline pollution profile |
 
-### Part 3 · Exploratory Data Analysis (15 Visualisations)
+### 5. Machine Learning
 
-| # | Plot | Key Insight |
-|---|---|---|
-| 1 | AQI Distribution | Right-skewed; long tail of severe events |
-| 2 | AQI Trend Over Time | Clear winter peaks; COVID dip in 2020 |
-| 3 | Monthly AQI Trends | Nov–Dec worst; Jul–Aug (monsoon) cleanest |
-| 4 | Seasonal AQI Trends | Winter AQI is 2–3× Monsoon AQI |
-| 5 | State-wise Comparison | Delhi consistently highest |
-| 6 | City-wise Comparison | Faridabad, Kanpur rank near Delhi |
-| 7 | Pollutant Distributions | PM2.5 most extreme right-skew |
-| 8 | Correlation Heatmap | PM2.5 ↔ PM10 strongly correlated (r≈0.8) |
-| 9 | PM2.5 Trend | Exceeds WHO limit for most of the year |
-| 10 | PM10 Trend | Rajasthan peaks in summer (dust storms) |
-| 11 | Winter vs Summer | Even Delhi's "clean" winter days = dirty spring days |
-| 12 | Crop Burning Season | AQI doubles in Punjab/Haryana in Oct–Nov |
-| 13 | Top 10 Polluted Cities | Industrial cities rival Delhi |
-| 14 | AQI Category Distribution | Delhi: ~35% hours in Poor or worse |
-| 15 | Yearly AQI Trend | Flat or worsening trend (ex-2020) |
+Target: `AQI_Final`, framed as regression.
 
-### Part 4 · Feature Engineering
-
-| Feature | Type | Why it helps |
-|---|---|---|
-| `AQI_Lag1`, `Lag3`, `Lag6`, `Lag24` | Lag | Air quality has strong autocorrelation |
-| `AQI_Roll3`, `Roll6`, `Roll24` | Rolling mean | Captures background pollution regime |
-| `AQI_Delta1`, `AQI_Delta6` | Rate of change | Is pollution rising or falling? |
-| `Month_Sin`, `Month_Cos` | Cyclical encoding | Jan and Dec are adjacent, not distant |
-| `Hour_Sin`, `Hour_Cos` | Cyclical encoding | Rush-hour pattern is cyclical |
-| `Season_Enc` | Integer | Winter ≠ Monsoon regime |
-| `IsWeekend` | Binary | Reduced traffic + industry on weekends |
-| `CropBurning` | Binary | Oct–Nov Punjab/Haryana stubble burning |
-| `State_*` | One-hot | Each state has a distinct pollution profile |
-
-### Part 5 · Machine Learning
-
-**Target variable:** `AQI_Final` (regression)
-
-**Train/test split:** Temporal (last 20% of data = test), preventing data leakage.
+Split is temporal — last 20% of the timeline held out as test set — rather than a random split, since a random split would let the model "see the future" via nearby timestamps.
 
 | Model | RMSE | MAE | R² |
 |---|---|---|---|
-| Random Forest |  |  |  |
-| XGBoost | ** | **** | **~** |
+| Random Forest | TODO | TODO | TODO |
+| XGBoost | TODO | TODO | TODO |
 
+*(numbers go here after running `run_pipeline.py` — see `outputs/reports/ml_results.csv`)*
 
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 AQI_Project/
 │
 ├── data/
 │   ├── raw/
-│   │   ├── station_hour.csv          ← Download from Kaggle
-│   │   └── stations.csv              ← Download from Kaggle
+│   │   ├── station_hour.csv          ← from Kaggle
+│   │   └── stations.csv              ← from Kaggle
 │   └── processed/
-│       └── northern_india_aqi.csv    ← Auto-generated after pipeline run
+│       └── northern_india_aqi.csv    ← generated by the pipeline
 │
 ├── notebooks/
-│   ├── 01_data_preprocessing.ipynb   ← Interactive exploration
+│   ├── 01_data_preprocessing.ipynb
 │   ├── 02_aqi_calculation.ipynb
 │   ├── 03_eda.ipynb
 │   ├── 04_feature_engineering.ipynb
 │   └── 05_ml_models.ipynb
 │
 ├── src/
-│   ├── data_preprocessing.py         ← Part 1: Load, merge, clean
-│   ├── aqi_calculator.py             ← Part 2: CPCB AQI formula
-│   ├── eda_visualizations.py         ← Part 3: 15 EDA plots
-│   ├── feature_engineering.py        ← Part 4: Lag, rolling, cyclical features
-│   └── ml_pipeline.py                ← Part 5: Train, evaluate, compare models
+│   ├── data_preprocessing.py         ← load, merge, clean
+│   ├── aqi_calculator.py             ← CPCB AQI formula
+│   ├── eda_visualizations.py         ← the 15 plots
+│   ├── feature_engineering.py        ← lag/rolling/cyclical features
+│   └── ml_pipeline.py                ← train, evaluate, compare
 │
 ├── models/
-│   ├── linear_regression.pkl         ← Auto-saved after training
 │   ├── random_forest.pkl
 │   ├── xgboost.pkl
-│   ├── best_model.pkl                ← Best model (used by dashboard)
-│   └── feature_cols.pkl              ← Feature list (used by dashboard)
+│   ├── best_model.pkl                ← used by the dashboard
+│   └── feature_cols.pkl
 │
 ├── dashboard/
-│   └── app.py                        ← Part 6: Streamlit 6-page dashboard
+│   └── app.py
 │
 ├── outputs/
-│   ├── figures/                      ← All 15 EDA plots + ML evaluation plots
+│   ├── figures/
 │   └── reports/
-│       └── ml_results.csv            ← Model comparison table
+│       └── ml_results.csv
 │
-├── run_pipeline.py                   ← ONE COMMAND to run everything
+├── run_pipeline.py                   ← runs the whole thing end to end
 ├── requirements.txt
 └── README.md
 ```
 
----
-
 ## Quick Start
-
-### 1. Clone the repository
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/AQI-Northern-India.git
 cd AQI-Northern-India
-```
-
-### 2. Create a virtual environment
-
-```bash
-# Using conda (recommended)
-conda create -n aqi_env python=3.10
-conda activate aqi_env
-
-# OR using venv
-python -m venv aqi_env
-source aqi_env/bin/activate        # Linux/Mac
-aqi_env\Scripts\activate           # Windows
-```
-
-### 3. Install dependencies
-
-```bash
+python -m venv aqi_env && source aqi_env/bin/activate   # Windows: aqi_env\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Download the dataset
+Download the [dataset from Kaggle](https://www.kaggle.com/datasets/rohanrao/air-quality-data-in-india) and put `station_hour.csv` + `stations.csv` in `data/raw/`.
 
-1. Go to → [Kaggle Dataset](https://www.kaggle.com/datasets/rohanrao/air-quality-data-in-india)
-2. Download and extract
-3. Place `station_hour.csv` and `stations.csv` in `data/raw/`
-
-### 5. Run the full pipeline
+Then:
 
 ```bash
 python run_pipeline.py
 ```
 
-This single command will:
-- Preprocess and clean the data
-- Calculate AQI using CPCB methodology
-- Generate all 15 EDA visualisations
-- Engineer features
-- Train and compare all 3 ML models
-- Save the best model to `models/best_model.pkl`
-- Export results to `outputs/`
+Runs the full pipeline — preprocessing through model training — and saves the best model to `models/best_model.pkl`.
 
-### 6. Launch the Streamlit dashboard
+Then launch the dashboard:
 
 ```bash
 streamlit run dashboard/app.py
 ```
 
-Open your browser at `http://localhost:8501`
+## Results
 
----
+Model comparison table (filled in once the pipeline's been run on the full dataset):
 
-## 📈 Results
+| Model | RMSE | MAE | R² |
+|---|---|---|---|
+| Random Forest | TODO | TODO | TODO |
+| XGBoost | TODO | TODO | TODO |
 
-### Model Comparison
+## Dashboard
 
-```
-════════════════════════════════════════════════════════
-  MODEL          RMSE      MAE       R²
-────────────────────────────────────────────────────────
-  Random Forest    
-  XGBoost    
-════════════════════════════════════════════════════════
-```
+6 pages:
 
-
----
-
-## Streamlit Dashboard
-
-The dashboard has **6 interactive pages**:
-
-| Page | Description |
+| Page | What's on it |
 |---|---|
-| **1 · Project Overview** | KPI cards, methodology summary, India map choropleth |
-| **2 · AQI Trends** | Monthly trend lines, hourly patterns, year-over-year bar charts |
-| **3 · State Comparison** | Box plots, stacked category bars, seasonal breakdown |
-| **4 · Pollutant Analysis** | Per-pollutant deep dive, correlation heatmap, crop burning timeline |
-| **5 · AQI Prediction** | Enter live readings → get predicted AQI + gauge chart |
-| **6 · Download Results** | Export cleaned data, city summary, and ML results as CSV |
-
----
+| Overview | KPI cards, methodology summary, India choropleth |
+| AQI Trends | Monthly/hourly patterns, year-over-year bars |
+| State Comparison | Box plots, category breakdowns by season |
+| Pollutant Analysis | Per-pollutant deep dive, correlation heatmap, crop burning timeline |
+| AQI Prediction | Punch in live readings, get a predicted AQI + gauge |
+| Download Results | Export cleaned data / summaries / ML results as CSV |
 
 ## Key Findings
 
-1. **Delhi is the most polluted state** — mean AQI is consistently 30–50% higher than Punjab and Haryana, and nearly double that of Rajasthan.
+1. **Delhi is the worst of the five states** — mean AQI runs 30-50% higher than Punjab/Haryana, and close to double Rajasthan's.
 
-2. **Stubble burning causes measurable AQI spikes** — Punjab and Haryana AQI doubles in the Oct 15–Nov 30 paddy burning window, with Delhi's AQI lagging by ~48 hours due to wind transport.
+2. **Stubble burning has a measurable, lagged effect on Delhi** — Punjab/Haryana AQI roughly doubles in the Oct 15–Nov 30 paddy-burning window, and Delhi's AQI spikes about 48 hours later, consistent with wind transport.
 
-3. **Every state exceeds WHO PM2.5 limits** — The WHO annual safe limit (15 µg/m³) is exceeded for 10–12 months per year in all five states. The CPCB 24h limit (60 µg/m³) is routinely breached in winter.
+3. **All five states blow past WHO PM2.5 limits** — the WHO annual limit (15 µg/m³) is exceeded 10-12 months a year across the board, and the CPCB 24h limit (60 µg/m³) gets routinely breached every winter.
 
-4. **COVID-19 lockdown caused the sharpest AQI drop on record** — March–May 2020 shows a 35–50% reduction in AQI across all states, directly demonstrating that traffic and industrial emissions are primary drivers.
+4. **COVID lockdown caused the biggest AQI drop in the dataset** — March-May 2020 shows a 35-50% reduction across all five states, which is about as clean a natural experiment as you'll get for "traffic and industry are the main drivers."
 
-5. **Excluding 2020, air quality is not improving** — Trend lines are flat or slightly worsening across all states from 2015–2019, suggesting existing policies (odd-even scheme, BS-VI transition) have not yet produced measurable results at the state level.
+5. **Outside of 2020, things aren't improving** — trend lines are flat or slightly worse from 2015-2019. Doesn't look like odd-even or the BS-VI rollout has moved the needle yet, at least not at this level of granularity.
 
-6. **Rajasthan's pollution profile is structurally different** — Peak AQI occurs in May–June from desert dust storms (PM10-driven), not in winter like the other four states.
-
----
-
-
+6. **Rajasthan doesn't follow the winter-smog pattern** — its peak AQI hits in May-June, driven by PM10 from desert dust storms, not the same mechanism as the other four states.
 
 ---
 
-<div align="center">
-<sub>Data: CPCB via Kaggle (2015–2020) · Built with Python & Streamlit</sub>
-</div>
+Data: CPCB via Kaggle (2015–2020). Built with Python and Streamlit.
