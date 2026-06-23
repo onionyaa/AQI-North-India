@@ -1,20 +1,4 @@
-"""
-src/data_preprocessing.py
---------------------------
-PART 1: DATA PREPROCESSING
 
-Data preprocessing for the AQI forecasting project.
-Loads raw CPCB data, merges station metadata and
-creates features used in analysis.
-
-INPUTS:
-    data/raw/station_hour.csv   — hourly pollutant readings per station
-    data/raw/stations.csv       — station metadata (city, state, lat, lon)
-
-OUTPUT:
-    A clean pandas DataFrame with datetime features and geographic info.
-    Also saves: data/processed/northern_india_clean.csv
-"""
 
 import pandas as pd
 import numpy as np
