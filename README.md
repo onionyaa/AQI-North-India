@@ -73,7 +73,7 @@ AQI categories (standard CPCB bands):
 
 ### 3. EDA
 
-15 plots total, a few highlights below — full list and code in `src/eda_visualizations.py`.
+15 plots total, a few highlights below : 
 
 | Plot | What it shows |
 |---|---|
