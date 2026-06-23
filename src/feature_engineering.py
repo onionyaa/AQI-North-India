@@ -1,16 +1,3 @@
-"""
-Step 4 : Feature Engineering
-
-Builds the feature set used for AQI forecasting - lags, rolling stats,
-calendar features, and the crop-burning flag. Expects a dataframe that's
-already been through preprocessing + AQI calculation (needs AQI_Final,
-Datetime, State, StationId).
-
-Usage:
-    from src.feature_engineering import engineer_features
-    df_feat = engineer_features(df)
-"""
-
 import pandas as pd
 import numpy as np
 
