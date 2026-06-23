@@ -1,8 +1,4 @@
-"""
-Generates plots and saves them to outputs/figures/.
 
-Run directly or import run_full_eda(df) after preprocessing + AQI calculation.
-"""
 
 import os
 import warnings
