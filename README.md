@@ -108,8 +108,8 @@ Split is temporal — last 20% of the timeline held out as test set — rather t
 
 | Model | RMSE | MAE | R² |
 |---|---|---|---|
-| Random Forest | TODO | TODO | TODO |
-| XGBoost | 8.97 | 1.45 | 0.99 |
+| Random Forest | 9.28  | 1.65  | .09939 |
+| XGBoost | 8.97 | 1.45 | 0.9943 |
 
 
 ## Project Structure
@@ -188,8 +188,8 @@ Model comparison table (filled in once the pipeline's been run on the full datas
 
 | Model | RMSE | MAE | R² |
 |---|---|---|---|
-| Random Forest | TODO | TODO | TODO |
-| XGBoost | 8.97 | 1.45 | 0.99 |
+| Random Forest | 9.28  | 1.65  | .09939 |
+| XGBoost | 8.97 | 1.45 | 0.9943 |
 
 ## Dashboard
 
