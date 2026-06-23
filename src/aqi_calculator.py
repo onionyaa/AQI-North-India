@@ -1,20 +1,5 @@
-"""
-AQI calculation based on CPCB methodology.
-
-Each pollutant gets a rolling average, that average gets mapped to a
-sub-index via the CPCB breakpoint table, and the final AQI is just
-whichever sub-index is highest. Simple in principle, annoying in practice
-because every pollutant has a different window (24h vs 8h) and unit.
-
-Ref: https://cpcb.nic.in/displaypdf.php?id=aqi/AQI_calculation_sheet.pdf
-"""
-
 import numpy as np
 import pandas as pd
-
-
-# Breakpoint tables — [conc_low, conc_high, aqi_low, aqi_high]
-# Straight from the 2014 CPCB technical doc, don't change these.
 
 # PM2.5 in µg/m³, 24h avg
 PM25_BREAKPOINTS = [
