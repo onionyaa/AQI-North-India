@@ -111,7 +111,6 @@ Split is temporal — last 20% of the timeline held out as test set — rather t
 | Random Forest | TODO | TODO | TODO |
 | XGBoost | 8.97 | 1.45 | 0.99 |
 
-*(numbers go here after running `run_pipeline.py` — see `outputs/reports/ml_results.csv`)*
 
 ## Project Structure
 
