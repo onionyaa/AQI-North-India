@@ -1,8 +1,7 @@
 # AQI Analysis & Forecasting — Northern India
 
-Air quality pipeline covering five northern Indian states (2015-2020). Calculates official CPCB AQI from raw pollutant readings, does a full EDA pass, trains a couple of ML models to forecast next-hour AQI, and wraps it all in a Streamlit dashboard.
+Air quality pipeline covering five northern Indian states (2015-2020). Calculates official CPCB AQI from raw pollutant readings, does a full EDA pass, trains ML models to forecast next-hour AQI, and wraps it all in a Streamlit dashboard.
 
-I built this after seeing yet another winter of "severe" AQI days in Delhi and wanting to actually dig into the data instead of just reading headlines about it.
 
 ## Table of Contents
 
