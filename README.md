@@ -16,13 +16,13 @@ Air quality pipeline covering five northern Indian states (2015-2020). Calculate
 
 ## About
 
-Northern India — Delhi, Punjab, Haryana, UP, Rajasthan — has some of the worst air quality in the world, and it's not getting much coverage beyond "Delhi smog" headlines every November. This project digs into 5 years of hourly station data to see what's actually driving it.
+Northern India—especially Delhi, Punjab, Haryana, Uttar Pradesh, and Rajasthan—faces some of the worst air quality in the world. Yet the issue is often reduced to "Delhi smog" headlines each winter. This project analyzes five years of hourly air quality data to uncover the key factors driving pollution across the region.
 
-What's in here:
-- AQI calculated using the actual CPCB sub-index formula (not a simplified version)
-- EDA across all five states — seasonal patterns, crop burning spikes, the COVID dip
-- Random Forest and XGBoost models for next-hour AQI prediction
-- A 6-page Streamlit dashboard, including a live prediction tool
+Main Objectives:
+- Calculate AQI using the official CPCB sub-index methodology.
+- Analyze five years of air quality data to identify seasonal trends, crop-burning impacts, and the COVID-19 pollution dip.
+- Develop Random Forest and XGBoost models for next-hour AQI prediction.
+- Build a six-page Streamlit dashboard featuring interactive visualizations and a live AQI prediction tool.
 
 ## Dataset
 
@@ -39,12 +39,11 @@ What's in here:
 
 ### 1. Data Preprocessing
 
-Merged `station_hour.csv` with `stations.csv` on `StationId`, filtered down to the 5 northern states out of the full all-India dataset. Parsed datetime into Year/Month/Day/Hour/DayOfWeek/Season, forward-filled missing readings grouped by station (so I'm not pulling values across station boundaries), clipped negative sensor readings to 0, dropped fully-null rows, and removed duplicate `(StationId, Datetime)` pairs.
+Merged `station_hour.csv` with `stations.csv` on `StationId`, filtered down to the 5 northern states out of the full all-India dataset. Parsed datetime into Year/Month/Day/Hour/DayOfWeek/Season, forward-filled missing readings grouped by station, clipped negative sensor readings to 0, dropped fully-null rows, and removed duplicate `(StationId, Datetime)` pairs.
 
 ### 2. AQI Calculation (CPCB Methodology)
 
-This was the part I spent the most time getting right. CPCB computes a sub-index per pollutant using linear interpolation within breakpoint ranges, then takes the max sub-index as the final AQI:
-
+AQI was calculated using the official CPCB methodology, with pollutant concentrations converted to sub-indices through linear interpolation and the final AQI defined as the maximum sub-index.
 ```
 Ip = [(IHi - ILo) / (BPHi - BPLo)] × (Cp - BPLo) + ILo
 ```
@@ -86,7 +85,6 @@ AQI categories (standard CPCB bands):
 | Correlation heatmap | PM2.5 and PM10 strongly correlated (r ≈ 0.8) |
 | PM10 by state | Rajasthan spikes in summer — dust storms, not winter smog |
 | Crop burning window | AQI roughly doubles in Punjab/Haryana, Oct-Nov |
-| Top polluted cities | A few industrial UP cities rival Delhi |
 | Yearly trend | Flat-to-worsening 2015-2019, excluding the COVID year |
 
 ## 4. Feature Engineering
