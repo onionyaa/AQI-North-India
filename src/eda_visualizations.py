@@ -1,6 +1,5 @@
 """
-Step 3: EDA visualizations for the Northern India AQI project.
-Generates 15 plots and saves them to outputs/figures/.
+Generates plots and saves them to outputs/figures/.
 
 Run directly or import run_full_eda(df) after preprocessing + AQI calculation.
 """
