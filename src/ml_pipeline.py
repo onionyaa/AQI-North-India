@@ -1,27 +1,3 @@
-'''
-src/ml_pipeline.py
-PART 5: MACHINE LEARNING — AQI PREDICTION
-
-PURPOSE:
-    Train, tune, and compare three regression models:
-        1. Linear Regression  (interpretable baseline)
-        2. Random Forest       (ensemble of decision trees)
-        3. XGBoost             (gradient boosted trees — usually best)
-
-    Select the best model and save it for dashboard use.
-
-HOW TO USE:
-    from src.ml_pipeline import run_ml_pipeline
-    results, best_model, df_test = run_ml_pipeline(df)
-
-OUTPUT FILES:
-    models/linear_regression.pkl
-    models/random_forest.pkl
-    models/xgboost.pkl
-    models/best_model.pkl       ← copy of whichever model won
-    outputs/figures/ml_*.png   ← evaluation plots
-    outputs/reports/ml_results.csv
-'''
 
 import os
 import warnings
@@ -44,7 +20,6 @@ import xgboost as xgb
 
 warnings.filterwarnings("ignore")
 
-# ── Paths ──────────────────────────────────────────────────────
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 MODEL_DIR  = os.path.join(PROJECT_ROOT, "models")
 FIG_DIR    = os.path.join(PROJECT_ROOT, "outputs", "figures")
@@ -53,8 +28,6 @@ os.makedirs(MODEL_DIR,  exist_ok=True)
 os.makedirs(FIG_DIR,    exist_ok=True)
 os.makedirs(REPORT_DIR, exist_ok=True)
 
-
-# Evaluation helpers
 
 def _evaluate(y_true, y_pred, model_name):
     """
@@ -77,48 +50,26 @@ def _evaluate(y_true, y_pred, model_name):
 
 
 def _cross_validate(model, X, y, cv=5, model_name=""):
-    """
-    WHY CROSS-VALIDATION?
-        A single train-test split is luck-dependent.  If the test set
-        happens to be easy, R² looks great.  CV averages over 5 different
-        splits to get a robust estimate of generalisation performance.
-    """
+    
     kf = KFold(n_splits=cv, shuffle=True, random_state=42)
     scores = cross_val_score(model, X, y, scoring="r2", cv=kf)
     print(f"  {model_name:<22} CV R² = {scores.mean():.4f} ± {scores.std():.4f}")
     return scores.mean(), scores.std()
 
 
-# ─────────────────────────────────────────────────────────────
-# DATA PREPARATION
-# ─────────────────────────────────────────────────────────────
-
 def prepare_ml_data(df, feature_cols, target_col="AQI_Final",
                     test_size=0.2, random_state=42):
-    """
-    Create a clean X, y and split into train/test.
-
-    WHY TEMPORAL SPLIT (sort by time before split)?
-        Air quality data has autocorrelation.  If we randomly shuffle
-        before splitting, the model "sees the future" (a reading from
-        2019-11 in training while 2019-10 is in test).  We sort by
-        Datetime first to simulate a real deployment scenario where
-        the model is trained on historical data and tested on future data.
-    """
+   
     print("[ML] Preparing data …")
 
-    # Sort by time so that test set is always the most recent data
     if "Datetime" in df.columns:
         df = df.sort_values("Datetime")
 
-    # Drop rows with NaN in any feature or the target
-    needed = feature_cols + [target_col]
     df_clean = df[needed].dropna()
 
     X = df_clean[feature_cols].values
     y = df_clean[target_col].values
 
-    # Temporal split: last 20% of data = test set
     split_idx = int(len(X) * (1 - test_size))
     X_train, X_test = X[:split_idx], X[split_idx:]
     y_train, y_test = y[:split_idx], y[split_idx:]
@@ -128,26 +79,8 @@ def prepare_ml_data(df, feature_cols, target_col="AQI_Final",
     return X_train, X_test, y_train, y_test, df_clean.iloc[split_idx:].copy()
 
 
-# ─────────────────────────────────────────────────────────────
-# MODEL 1 — LINEAR REGRESSION
-# ─────────────────────────────────────────────────────────────
-
 def train_linear_regression(X_train, y_train):
-    """
-    Linear Regression with StandardScaler.
-
-    WHY SCALE FOR LINEAR REGRESSION?
-        LinearRegression finds coefficients that multiply each feature.
-        If PM2.5 ranges 0–500 and IsWeekend is 0/1, the raw coefficient
-        for IsWeekend would be enormous just to be on the same scale.
-        Scaling puts all features on the same footing.
-
-    WHY USE THIS AS BASELINE?
-        Linear regression is transparent — you can read the coefficients
-        and say "every additional hour of lag-1 AQI adds X points to
-        predicted AQI".  Complex models are judged by whether they
-        beat this simple benchmark.
-    """
+   
     print("\n[Model 1] Linear Regression")
     pipe = Pipeline([
         ("scaler", StandardScaler()),
@@ -157,30 +90,9 @@ def train_linear_regression(X_train, y_train):
     return pipe
 
 
-# ─────────────────────────────────────────────────────────────
-# MODEL 2 — RANDOM FOREST
-# ─────────────────────────────────────────────────────────────
 
 def train_random_forest(X_train, y_train):
-    """
-    Random Forest with manual hyperparameter choices.
 
-    WHY RANDOM FOREST?
-        An ensemble of decision trees.  Each tree is trained on a random
-        subset of data (bagging) and considers only a random subset of
-        features at each split.  This reduces overfitting and captures
-        non-linear relationships (e.g. AQI is not a linear function
-        of wind speed + temperature).
-
-    HYPERPARAMETERS EXPLAINED:
-        n_estimators=300   : 300 trees — more trees = less variance but
-                             slower training.
-        max_depth=20       : How deep each tree can grow.  Deep trees
-                             memorise training data (overfit).
-        min_samples_leaf=10: A leaf must have ≥10 samples — prevents the
-                             tree from fitting individual noisy readings.
-        n_jobs=-1          : Use all CPU cores (faster).
-    """
     print("\n[Model 2] Random Forest")
     model = RandomForestRegressor(
         n_estimators=300,
@@ -194,36 +106,8 @@ def train_random_forest(X_train, y_train):
     model.fit(X_train, y_train)
     return model
 
-# ─────────────────────────────────────────────────────────────
-# MODEL 3 — XGBOOST
-# ─────────────────────────────────────────────────────────────
-
 def train_xgboost(X_train, y_train, X_val=None, y_val=None):
-    """
-    XGBoost with early stopping.
-
-    WHY XGBOOST?
-        Gradient boosting builds trees sequentially, with each tree
-        correcting the errors of the previous one.  This gives high
-        accuracy on tabular data and is the go-to model for data science
-        competitions.
-
-    WHY EARLY STOPPING?
-        Instead of a fixed number of rounds, we watch performance on a
-        validation set and stop when it stops improving.  This prevents
-        overfitting automatically.
-
-    HYPERPARAMETERS EXPLAINED:
-        learning_rate=0.05 : How much each tree corrects (small = safe,
-                             needs more rounds).
-        max_depth=7        : Tree depth.  XGBoost trees are typically
-                             shallower than RF trees.
-        subsample=0.8      : Each tree sees 80% of training rows (reduces
-                             variance, similar to bagging).
-        colsample_bytree=0.8: Each tree sees 80% of features.
-        reg_alpha=0.1      : L1 regularisation (drives some weights to 0).
-        reg_lambda=1.0     : L2 regularisation (shrinks weights).
-    """
+  
     print("\n[Model 3] XGBoost")
     model = xgb.XGBRegressor(
         n_estimators=1000,
@@ -246,15 +130,11 @@ def train_xgboost(X_train, y_train, X_val=None, y_val=None):
     return model
 
 
-# ─────────────────────────────────────────────────────────────
+
 # EVALUATION PLOTS
-# ─────────────────────────────────────────────────────────────
 
 def plot_actual_vs_predicted(y_test, predictions_dict):
-    """
-    Scatter: Actual AQI vs Predicted AQI for each model.
-    A perfect model would have all points on the diagonal y=x line.
-    """
+   
     n = len(predictions_dict)
     fig, axes = plt.subplots(1, n, figsize=(6 * n, 5))
     if n == 1:
@@ -281,10 +161,7 @@ def plot_actual_vs_predicted(y_test, predictions_dict):
 
 
 def plot_residuals(y_test, predictions_dict):
-    """
-    Residuals (error) distribution.  A good model has residuals centred
-    at 0 with no systematic patterns.
-    """
+    
     n = len(predictions_dict)
     fig, axes = plt.subplots(1, n, figsize=(6 * n, 4))
     if n == 1:
@@ -341,9 +218,7 @@ def plot_feature_importance(model, feature_cols, model_name, top_n=20):
 
 
 def plot_model_comparison(results_df):
-    """
-    Side-by-side bar chart comparing RMSE, MAE, R² across all models.
-    """
+   
     fig, axes = plt.subplots(1, 3, figsize=(14, 5))
     metrics = ["RMSE", "MAE", "R2"]
     titles  = ["Root Mean Square Error ↓", "Mean Absolute Error ↓", "R² Score ↑"]
@@ -366,16 +241,8 @@ def plot_model_comparison(results_df):
     print(f"  [✓] Saved → {path}")
 
 
-# ─────────────────────────────────────────────────────────────
-# MASTER PIPELINE
-# ─────────────────────────────────────────────────────────────
-
 def run_ml_pipeline(df, feature_cols, target_col="AQI_Final"):
-    """
-    Full train → evaluate → compare → save pipeline.
-
-    Returns
-    -------
+  
     results_df  : pd.DataFrame  — metrics for all models
     best_model  : trained model object
     df_test     : pd.DataFrame  — test set with predictions appended
@@ -384,24 +251,19 @@ def run_ml_pipeline(df, feature_cols, target_col="AQI_Final"):
     print("  MACHINE LEARNING PIPELINE")
     print("="*55)
 
-    # ── 1. Data prep ──────────────────────────────────────────
+   
     X_train, X_test, y_train, y_test, df_test_raw = prepare_ml_data(
         df, feature_cols, target_col
     )
 
-    # Use last 10% of train as validation for XGBoost early stopping
-    val_split = int(len(X_train) * 0.9)
-    X_val, y_val = X_train[val_split:], y_train[val_split:]
-    X_tr,  y_tr  = X_train[:val_split], y_train[:val_split]
 
-    # ── 2. Train models ───────────────────────────────────────
+   
     models = {
         "Linear Regression": train_linear_regression(X_train, y_train),
         "Random Forest":     train_random_forest(X_train, y_train),
         "XGBoost":           train_xgboost(X_tr, y_tr, X_val, y_val),
     }
 
-    # ── 3. Evaluate ───────────────────────────────────────────
     print("\n─── Test-set performance ───")
     results = []
     predictions = {}
@@ -412,7 +274,6 @@ def run_ml_pipeline(df, feature_cols, target_col="AQI_Final"):
         results.append(_evaluate(y_test, y_pred, name))
         df_test_raw[f"Pred_{name.replace(' ', '_')}"] = y_pred
 
-    # ── 4. Cross-validation ───────────────────────────────────
     print("\n─── 5-fold cross-validation (R²) ───")
     for name, model in models.items():
         if "XGBoost" in name:
@@ -431,7 +292,6 @@ def run_ml_pipeline(df, feature_cols, target_col="AQI_Final"):
         else:
             _cross_validate(model, X_train, y_train, model_name=name)
 
-    # ── 5. Plots ──────────────────────────────────────────────
     print("\n─── Generating evaluation plots ───")
     results_df = pd.DataFrame(results)
     plot_actual_vs_predicted(y_test, predictions)
@@ -440,7 +300,6 @@ def run_ml_pipeline(df, feature_cols, target_col="AQI_Final"):
     for name, model in models.items():
         plot_feature_importance(model, feature_cols, name)
 
-    # ── 6. Select best model (lowest RMSE) ────────────────────
     best_row   = results_df.loc[results_df["RMSE"].idxmin()]
     best_name  = best_row["Model"]
     best_model = models[best_name]
@@ -452,7 +311,6 @@ def run_ml_pipeline(df, feature_cols, target_col="AQI_Final"):
     print(f"    R²   = {best_row['R2']:.4f}")
     print(f"{'='*55}")
 
-    # ── 7. Save all models ────────────────────────────────────
     print("\n─── Saving models ───")
     name_file = {
         "Linear Regression": "linear_regression.pkl",
@@ -464,23 +322,15 @@ def run_ml_pipeline(df, feature_cols, target_col="AQI_Final"):
         joblib.dump(model, path)
         print(f"  [✓] Saved → {path}")
 
-    # Save best model with generic name for dashboard use
     joblib.dump(best_model, os.path.join(MODEL_DIR, "best_model.pkl"))
     print(f"  [✓] Best model saved → models/best_model.pkl")
 
-    # Save feature list (dashboard needs the same features)
     joblib.dump(feature_cols, os.path.join(MODEL_DIR, "feature_cols.pkl"))
 
-    # Save results CSV
     results_df.to_csv(os.path.join(REPORT_DIR, "ml_results.csv"), index=False)
     print(f"  [✓] Results → outputs/reports/ml_results.csv")
 
     return results_df, best_model, df_test_raw
-
-
-# ─────────────────────────────────────────────────────────────
-# QUICK-RUN
-# ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import sys
