@@ -1,35 +1,21 @@
 import pandas as pd
 import numpy as np
 
-
 def engineer_features(df):
-    """
-    Adds lag/rolling/calendar features to df and drops the warm-up rows
-    that don't have enough history for the lag features yet.
 
-    Returns the augmented dataframe.
-    """
     print("[FE] engineering features...")
     df = df.sort_values(["StationId", "Datetime"]).copy()
-
-    # group by station so lags don't leak across sensors - station A's
-    # reading from an hour ago has nothing to do with station B
     g = df.groupby("StationId")["AQI_Final"]
 
-    # lag features - air quality is heavily autocorrelated, pollution
-    # events (inversions, stubble burning, dust) stick around for hours
     df["AQI_Lag1"] = g.shift(1)
     df["AQI_Lag3"] = g.shift(3)
     df["AQI_Lag6"] = g.shift(6)
     df["AQI_Lag24"] = g.shift(24)  # same hour, previous day
 
-    # rolling means smooth out single bad readings and give a sense of
-    # the "background" pollution level
     df["AQI_Roll3"] = g.transform(lambda x: x.rolling(3, min_periods=2).mean())
     df["AQI_Roll6"] = g.transform(lambda x: x.rolling(6, min_periods=3).mean())
     df["AQI_Roll24"] = g.transform(lambda x: x.rolling(24, min_periods=12).mean())
 
-    # rate of change - rising vs falling AQI matters as much as the level
     df["AQI_Delta1"] = df["AQI_Final"] - df["AQI_Lag1"]
     df["AQI_Delta6"] = df["AQI_Final"] - df["AQI_Lag6"]
 
@@ -41,8 +27,6 @@ def engineer_features(df):
     if "Hour" not in df.columns:
         df["Hour"] = df["Datetime"].dt.hour
 
-    # season as an int (0=winter,1=spring,2=monsoon,3=autumn) - winter
-    # pollution regime in N. India is a completely different beast from monsoon
     if "Season" not in df.columns:
         season_map = {
             12: 0, 1: 0, 2: 0,
@@ -58,15 +42,11 @@ def engineer_features(df):
     if "IsWeekend" not in df.columns:
         df["IsWeekend"] = (df["DayOfWeek"] >= 5).astype(int)
 
-    # crop burning flag - Oct/Nov + Punjab/Haryana is the single biggest
-    # episodic source of pollution up north, worth a dedicated feature
-    # rather than hoping the model infers it from month + state alone
     if "CropBurning" not in df.columns:
         df["CropBurning"] = (
             (df["Month"].isin([10, 11])) & (df["State"].isin(["Punjab", "Haryana"]))
         ).astype(int)
 
-    # cyclical encoding so e.g. Dec and Jan aren't treated as far apart
     df["Month_Sin"] = np.sin(2 * np.pi * df["Month"] / 12)
     df["Month_Cos"] = np.cos(2 * np.pi * df["Month"] / 12)
     df["Hour_Sin"] = np.sin(2 * np.pi * df["Hour"] / 24)
@@ -74,12 +54,9 @@ def engineer_features(df):
     df["DoW_Sin"] = np.sin(2 * np.pi * df["DayOfWeek"] / 7)
     df["DoW_Cos"] = np.cos(2 * np.pi * df["DayOfWeek"] / 7)
 
-    # one-hot the state column for the linear/XGBoost models
     state_dummies = pd.get_dummies(df["State"], prefix="State", dtype=int)
     df = pd.concat([df, state_dummies], axis=1)
 
-    # first ~24h per station won't have full lag history, drop those
-    critical = ["AQI_Lag1", "AQI_Roll3"]
     before = len(df)
     df = df.dropna(subset=critical)
     print(f"  dropped {before - len(df):,} warm-up rows (no lag history yet)")
@@ -98,17 +75,8 @@ def engineer_features(df):
     print(f"  final shape: {df.shape[0]:,} rows x {df.shape[1]} cols")
     return df
 
-
 def get_feature_columns(df, include_pollutants=True):
-    """
-    Returns (feature_cols, target_col) for model training.
-
-    include_pollutants=False gives an AQI-only feature set (lags/rolling/
-    calendar), useful as a baseline or for forecasting horizons where raw
-    pollutant readings won't be available at inference time.
-    """
     TARGET = "AQI_Final"
-
     base_features = [
         "AQI_Lag1", "AQI_Lag3", "AQI_Lag6", "AQI_Lag24",
         "AQI_Roll3", "AQI_Roll6", "AQI_Roll24",
@@ -132,7 +100,6 @@ def get_feature_columns(df, include_pollutants=True):
 
     feature_cols = [f for f in all_features if f in df.columns]
     return feature_cols, TARGET
-
 
 if __name__ == "__main__":
     import sys, os
