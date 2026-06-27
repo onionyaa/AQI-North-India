@@ -118,15 +118,7 @@ def _rolling_per_station(df, col, window, agg="mean"):
 
 
 def calculate_aqi(df):
-    """Compute CPCB AQI for every row in df.
-
-    Adds rolling-average columns, sub-index columns, AQI_Calculated,
-    AQI_Final, and AQI_Category. Rows where no sub-index can be computed
-    are dropped.
-
-    If df already has an 'AQI' column (from the Kaggle dataset), we keep
-    it and only fill gaps with our calculated values.
-    """
+    
     print("Computing AQI...")
     df = df.sort_values(["StationId", "Datetime"]).copy()
 
@@ -177,11 +169,7 @@ def calculate_aqi(df):
 
 
 def get_dominant_pollutant(df):
-    """Tag each row with whichever pollutant drove the AQI.
-
-    Handy for the policy analysis section — knowing the number is less
-    useful than knowing what to actually target.
-    """
+    
     SI_COLS = ["SI_PM25", "SI_PM10", "SI_SO2", "SI_NOx", "SI_NH3", "SI_CO", "SI_O3"]
     name_map = {
         "SI_PM25": "PM2.5", "SI_PM10": "PM10", "SI_SO2": "SO2",
@@ -190,7 +178,6 @@ def get_dominant_pollutant(df):
     present = [c for c in SI_COLS if c in df.columns]
     df["DominantPollutant"] = df[present].idxmax(axis=1).map(name_map)
     return df
-
 
 if __name__ == "__main__":
     import os
