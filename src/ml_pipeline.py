@@ -1,4 +1,3 @@
-
 import os
 import warnings
 import joblib
@@ -48,23 +47,17 @@ def _evaluate(y_true, y_pred, model_name):
     print(f"  {model_name:<22} RMSE={rmse:.2f}  MAE={mae:.2f}  R²={r2:.4f}")
     return {"Model": model_name, "RMSE": rmse, "MAE": mae, "R2": r2}
 
-
 def _cross_validate(model, X, y, cv=5, model_name=""):
-    
     kf = KFold(n_splits=cv, shuffle=True, random_state=42)
     scores = cross_val_score(model, X, y, scoring="r2", cv=kf)
     print(f"  {model_name:<22} CV R² = {scores.mean():.4f} ± {scores.std():.4f}")
     return scores.mean(), scores.std()
 
-
 def prepare_ml_data(df, feature_cols, target_col="AQI_Final",
                     test_size=0.2, random_state=42):
-   
     print("[ML] Preparing data …")
-
     if "Datetime" in df.columns:
         df = df.sort_values("Datetime")
-
     df_clean = df[needed].dropna()
 
     X = df_clean[feature_cols].values
@@ -80,7 +73,6 @@ def prepare_ml_data(df, feature_cols, target_col="AQI_Final",
 
 
 def train_linear_regression(X_train, y_train):
-   
     print("\n[Model 1] Linear Regression")
     pipe = Pipeline([
         ("scaler", StandardScaler()),
@@ -88,7 +80,6 @@ def train_linear_regression(X_train, y_train):
     ])
     pipe.fit(X_train, y_train)
     return pipe
-
 
 
 def train_random_forest(X_train, y_train):
@@ -129,9 +120,6 @@ def train_xgboost(X_train, y_train, X_val=None, y_val=None):
     print(f"  Best iteration: {model.best_iteration}")
     return model
 
-
-
-# EVALUATION PLOTS
 
 def plot_actual_vs_predicted(y_test, predictions_dict):
    
@@ -184,15 +172,10 @@ def plot_residuals(y_test, predictions_dict):
 
 
 def plot_feature_importance(model, feature_cols, model_name, top_n=20):
-    """
-    Bar chart of top N most important features.
-    For Random Forest: mean decrease in impurity.
-    For XGBoost: gain-based importance.
-    """
+  
     if hasattr(model, "feature_importances_"):
         importances = model.feature_importances_
     elif hasattr(model, "named_steps"):
-        # Pipeline (Linear Regression)
         return   # Skip for linear model — use coefficients separately
     else:
         return
@@ -243,20 +226,13 @@ def plot_model_comparison(results_df):
 
 def run_ml_pipeline(df, feature_cols, target_col="AQI_Final"):
   
-    results_df  : pd.DataFrame  — metrics for all models
-    best_model  : trained model object
-    df_test     : pd.DataFrame  — test set with predictions appended
-    """
     print("\n" + "="*55)
     print("  MACHINE LEARNING PIPELINE")
     print("="*55)
 
-   
     X_train, X_test, y_train, y_test, df_test_raw = prepare_ml_data(
         df, feature_cols, target_col
     )
-
-
    
     models = {
         "Linear Regression": train_linear_regression(X_train, y_train),
