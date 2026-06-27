@@ -26,12 +26,16 @@ PROCESSED_PATH   = os.path.join(PROCESSED_DIR, "northern_india_clean.csv")
 
 def load_raw_data(station_hour_path=RAW_STATION_HOUR,
                   stations_path=RAW_STATIONS):
+                      ):
+    """
+    Load the two CSVs from Kaggle into DataFrames.
 
     Returns
     -------
     station_hour : pd.DataFrame
     stations     : pd.DataFrame
     """
+   
     print(" Loading raw CSVs …")
 
     station_hour = pd.read_csv(station_hour_path, low_memory=False)
