@@ -212,7 +212,7 @@ Model comparison table (filled in once the pipeline's been run on the full datas
 
 3. **All five states blow past WHO PM2.5 limits** — the WHO annual limit (15 µg/m³) is exceeded 10-12 months a year across the board, and the CPCB 24h limit (60 µg/m³) gets routinely breached every winter.
 
-4. **COVID lockdown caused the biggest AQI drop in the dataset** — March-May 2020 shows a 35-50% reduction across all five states, which is about as clean a natural experiment as you'll get for "traffic and industry are the main drivers."
+4. **COVID lockdown caused the biggest AQI drop in the dataset** — March-May 2020 shows a 35-50% reduction across all five states."
 
 5. **Outside of 2020, things aren't improving** — trend lines are flat or slightly worse from 2015-2019. Doesn't look like odd-even or the BS-VI rollout has moved the needle yet, at least not at this level of granularity.
 
